@@ -6,6 +6,7 @@ export declare class PublicModuleController {
     constructor(prisma: PrismaService, cache: CacheService);
     private getOrg;
     getPublicOrgInfo(slug: string): Promise<any>;
+    getPublicWebsite(slug: string): Promise<any>;
     private checkModule;
     getPublicRooms(slug: string): Promise<any>;
     getRoomInventory(slug: string): Promise<any>;

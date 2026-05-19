@@ -13,4 +13,5 @@ export declare class AuthController {
             organization: any;
         };
     }>;
+    getLoyalty(email: string): Promise<any>;
 }

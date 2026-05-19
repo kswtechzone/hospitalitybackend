@@ -60,6 +60,42 @@ export class PublicModuleController {
     return org;
   }
 
+  @Get('website')
+  async getPublicWebsite(@Param('slug') slug: string) {
+    const cacheKey = `public_website:${slug}`;
+    const cached = this.cache.get(cacheKey);
+    if (cached) {
+      console.log(`⚡ Cache Hit: Public Website for slug "${slug}"`);
+      return cached;
+    }
+
+    const website = await this.prisma.client.website.findFirst({
+      where: {
+        OR: [
+          { subdomain: slug },
+          { organization: { slug } }
+        ],
+        deletedAt: null
+      },
+      include: {
+        brand: true,
+        pages: {
+          include: {
+            sections: {
+              where: { isActive: true },
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+      },
+    });
+
+    if (!website) throw new NotFoundException('Website not found');
+
+    this.cache.set(cacheKey, website, 60); // Cache for 60s
+    return website;
+  }
+
   private checkModule(org: any, moduleName: string) {
     if (!org.enabledModules.includes(moduleName)) {
       throw new ForbiddenException(`${moduleName} is not enabled for this organization`);

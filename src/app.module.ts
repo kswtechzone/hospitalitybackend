@@ -18,6 +18,7 @@ import { CrmModule } from './modules/crm/crm.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { SchedulingModule } from './modules/scheduling/scheduling.module';
 import { PromotionModule } from './modules/promotion/promotion.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { PromotionModule } from './modules/promotion/promotion.module';
     IdentityModule,
     SchedulingModule,
     PromotionModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [],

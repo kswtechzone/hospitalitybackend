@@ -27,6 +27,7 @@ const crm_module_1 = require("./modules/crm/crm.module");
 const identity_module_1 = require("./modules/identity/identity.module");
 const scheduling_module_1 = require("./modules/scheduling/scheduling.module");
 const promotion_module_1 = require("./modules/promotion/promotion.module");
+const notification_module_1 = require("./modules/notification/notification.module");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer
@@ -60,6 +61,7 @@ exports.AppModule = AppModule = __decorate([
             identity_module_1.IdentityModule,
             scheduling_module_1.SchedulingModule,
             promotion_module_1.PromotionModule,
+            notification_module_1.NotificationModule,
         ],
         controllers: [],
         providers: [],

@@ -666,3 +666,15 @@ model CouponRedemption {
   @@index([referenceId])
 }
 
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   // Maps to user id, email, or guest id
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
+
