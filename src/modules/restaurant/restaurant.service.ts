@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PromotionService } from '../promotion/promotion.service';
 
 @Injectable()
 export class RestaurantService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private promotionService: PromotionService,
+  ) {}
 
   async getAllRestaurants() {
     return this.prisma.client.restaurant.findMany({
@@ -133,7 +137,28 @@ export class RestaurantService {
       });
     }
 
-    return this.prisma.client.order.create({
+    let discountAmount = 0;
+    let appliedCoupon = null;
+
+    if (data.couponCode) {
+      const validation = await this.promotionService.validateCoupon({
+        code: data.couponCode,
+        amount: totalPrice,
+        moduleType: 'POS',
+        customerId: data.customerId,
+        organizationId: orgId,
+      });
+
+      if (!validation.valid) {
+        throw new BadRequestException(validation.reason);
+      }
+
+      discountAmount = validation.discountAmount;
+      appliedCoupon = data.couponCode.toUpperCase();
+      totalPrice = validation.finalAmount;
+    }
+
+    const createdOrder = await this.prisma.client.order.create({
       data: {
         organizationId: orgId,
         restaurantId,
@@ -146,6 +171,19 @@ export class RestaurantService {
       },
       include: { items: true },
     });
+
+    if (appliedCoupon) {
+      await this.promotionService.redeemCoupon(
+        appliedCoupon,
+        totalPrice + discountAmount, // original amount before discount
+        'POS',
+        createdOrder.id,
+        orgId,
+        data.customerId,
+      );
+    }
+
+    return createdOrder;
   }
 
   private async verifyRestaurantOwnership(restaurantId: string, orgId: string) {

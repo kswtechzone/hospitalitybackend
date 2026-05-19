@@ -1,12 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CacheService } from '../public/cache.service';
+import { PromotionService } from '../promotion/promotion.service';
 
 @Injectable()
 export class ParlorService {
   constructor(
     private prisma: PrismaService,
-    private cache: CacheService
+    private cache: CacheService,
+    private promotionService: PromotionService,
   ) {}
 
   // Category Management
@@ -85,8 +87,27 @@ export class ParlorService {
 
     if (services.length === 0) throw new NotFoundException('No valid services found');
 
-    const discountAmount = Number(discount || 0);
     const basePrice = services.reduce((sum, s) => sum + s.price, 0);
+    let discountAmount = Number(discount || 0);
+    let appliedCoupon = null;
+
+    if (data.couponCode) {
+      const validation = await this.promotionService.validateCoupon({
+        code: data.couponCode,
+        amount: basePrice,
+        moduleType: 'PARLOR',
+        customerId: data.customerId,
+        organizationId: orgId,
+      });
+
+      if (!validation.valid) {
+        throw new BadRequestException(validation.reason);
+      }
+
+      discountAmount = validation.discountAmount;
+      appliedCoupon = data.couponCode.toUpperCase();
+    }
+
     const totalPrice = Math.max(0, basePrice - discountAmount);
 
     // Dynamic defaults for POS bookings
@@ -115,6 +136,17 @@ export class ParlorService {
       },
       include: { services: true }
     });
+
+    if (appliedCoupon) {
+      await this.promotionService.redeemCoupon(
+        appliedCoupon,
+        basePrice,
+        'PARLOR',
+        parlorBooking.id,
+        orgId,
+        data.customerId,
+      );
+    }
 
     // Auto-create Guest KSW Profile if requested
     if (data.registerCustomerProfile) {

@@ -19,7 +19,7 @@ async function main() {
     where: { slug: 'ksw-hq' },
     update: {},
     create: {
-      name: 'KSW Hospitality Headquarters',
+      name: 'KSWMS Headquarters',
       slug: 'ksw-hq',
       enabledModules: ['DASHBOARD', 'HOTEL_MANAGEMENT', 'POS', 'RESTAURANT', 'WEBSITE', 'INVENTORY', 'HR', 'FINANCE'],
     },
@@ -27,10 +27,10 @@ async function main() {
 
   // 2. Create Super Admin
   await prisma.user.upsert({
-    where: { email: 'admin@kswhospitality.com' },
+    where: { email: 'admin@kswtechzone.com.np' },
     update: {},
     create: {
-      email: 'admin@kswhospitality.com',
+      email: 'admin@kswtechzone.com.np',
       passwordHash,
       name: 'Super Admin',
       role: 'SUPER_ADMIN',
@@ -39,7 +39,7 @@ async function main() {
   });
 
   console.log('--- Production Baseline Seeded ---');
-  console.log('Super Admin: admin@kswhospitality.com / Admin@123');
+  console.log('Super Admin: admin@kswtechzone.com.np / Admin@123');
 }
 
 main()

@@ -70,7 +70,11 @@ export class WebsiteService {
     }
 
     // 2. Validate unique subdomain
+    const RESERVED_SUBDOMAINS = ['admin', 'api', 'app', 'dashboard', 'kswms', 'www', 'mail', 'auth'];
     if (data.subdomain) {
+      if (RESERVED_SUBDOMAINS.includes(data.subdomain.toLowerCase())) {
+        throw new BadRequestException('Subdomain is reserved and cannot be used.');
+      }
       const existing = await this.prisma.client.website.findUnique({
         where: { subdomain: data.subdomain },
       });
@@ -78,7 +82,14 @@ export class WebsiteService {
         throw new BadRequestException('Subdomain is already taken');
       }
     }
-
+    if (data.customDomain) {
+      const existingDomain = await this.prisma.client.website.findUnique({
+        where: { customDomain: data.customDomain },
+      });
+      if (existingDomain && existingDomain.deletedAt === null) {
+        throw new BadRequestException('Custom domain is already registered to another website.');
+      }
+    }
     // 3. Create Website
     const website = await this.prisma.client.website.create({
       data: {
@@ -169,6 +180,15 @@ export class WebsiteService {
 
     if (!website) {
       throw new NotFoundException('Website not found');
+    }
+
+    if (data.customDomain) {
+      const existing = await this.prisma.client.website.findUnique({
+        where: { customDomain: data.customDomain },
+      });
+      if (existing && existing.id !== id && existing.deletedAt === null) {
+        throw new BadRequestException('Custom domain is already registered to another website.');
+      }
     }
 
     return this.prisma.client.website.update({

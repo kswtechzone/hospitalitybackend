@@ -38,6 +38,14 @@ export class OrganizationController {
     return this.orgService.updateModules(id, modules);
   }
 
+  @Put(':id')
+  async updateProfile(
+    @Param('id') id: string,
+    @Body() data: { country?: string; currency?: string; name?: string }
+  ) {
+    return this.orgService.updateOrganizationProfile(id, data);
+  }
+
   @Post(':id/toggle-module')
   async toggleModule(@Param('id') id: string, @Body('moduleName') moduleName: string) {
     return this.orgService.toggleModule(id, moduleName);

@@ -18,6 +18,8 @@ model Organization {
   isActive       Boolean  @default(true)
   enabledModules String[] @default(["DASHBOARD"]) // e.g., ["HOTEL_MANAGEMENT", "INVENTORY", "POS", "WEBSITE"]
   subscriptionPlan String @default("FREE") // FREE, GROWTH, ENTERPRISE
+  country        String   @default("Nepal")
+  currency       String   @default("NPR")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   deletedAt      DateTime?
@@ -37,6 +39,8 @@ model Organization {
   parlorCategories ParlorCategory[]
   parlorServices ParlorService[]
   parlorBookings ServiceBooking[]
+  coupons        Coupon[]
+  couponRedemptions CouponRedemption[]
   
   // KSW centralized platform mappings
   memberships    OrganizationMembership[]
@@ -608,5 +612,57 @@ model RestaurantReservationDetails {
 
   booking    CentralBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   @@index([tableId])
+}
+
+model Coupon {
+  id             String             @id @default(uuid())
+  organizationId String
+  code           String             // e.g., "SAVE20"
+  type           String             // "PERCENT" | "FIXED" | "FREE_ITEM"
+  value          Float              // percentage discount or flat amount
+  minOrderValue  Float              @default(0)
+  maxDiscount    Float?             // Maximum cap for percentage discounts
+  startDate      DateTime
+  endDate        DateTime
+  usageLimit     Int                @default(999999) // Global maximum redemptions
+  perUserLimit   Int                @default(1)      // Maximum redemptions per user/customer
+  isActive       Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  scopes         CouponScope[]
+  redemptions    CouponRedemption[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+}
+
+model CouponScope {
+  id             String             @id @default(uuid())
+  couponId       String
+  moduleType     String             // "POS" | "PARLOR" | "HOTEL" | "ALL"
+  entityType     String             // "ORDER" | "BOOKING" | "INVOICE"
+
+  coupon         Coupon             @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+}
+
+model CouponRedemption {
+  id             String             @id @default(uuid())
+  couponId       String
+  userId         String?            // Central PlatformUser / Customer ID if present
+  organizationId String
+  referenceId    String             // target orderId, bookingId, or invoiceId
+  discountApplied Float
+  createdAt      DateTime           @default(now())
+
+  coupon         Coupon             @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+  @@index([organizationId])
+  @@index([referenceId])
 }
 

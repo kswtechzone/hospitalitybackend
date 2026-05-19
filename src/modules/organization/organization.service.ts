@@ -126,4 +126,14 @@ export class OrganizationService {
       where: { organizationId: orgId }
     });
   }
+
+  async updateOrganizationProfile(id: string, data: { country?: string; currency?: string; name?: string }) {
+    const org = await this.prisma.client.organization.findUnique({ where: { id } });
+    if (!org) throw new NotFoundException('Organization not found');
+
+    return this.prisma.client.organization.update({
+      where: { id },
+      data,
+    });
+  }
 }

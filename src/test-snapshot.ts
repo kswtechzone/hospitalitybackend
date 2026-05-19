@@ -65,7 +65,7 @@ async function runSnapshotVerification() {
         organizationId: org.id,
         roomId: room.id,
         guestName: 'John Dev',
-        guestEmail: 'john.dev@kswhospitality.com',
+        guestEmail: 'john.dev@kswtechzone.com.np',
         guestPhone: '+18887776666',
         startTime: new Date(),
         endTime: new Date(Date.now() + 86400000 * 3), // 3 days stay

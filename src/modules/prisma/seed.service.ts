@@ -11,7 +11,7 @@ export class SeedService implements OnModuleInit {
   }
 
   async seedAdmin() {
-    const adminEmail = 'sanjay@kswhospitality.com';
+    const adminEmail = 'sanjay@kswtechzone.com.np';
     const password = 'Ksw@123';
     
     try {
@@ -29,7 +29,7 @@ export class SeedService implements OnModuleInit {
           where: { slug: 'ksw-hq' },
           update: {},
           create: {
-            name: 'KSW Hospitality HQ',
+            name: 'KSWMS HQ',
             slug: 'ksw-hq',
             enabledModules: ['DASHBOARD', 'HOTEL_MANAGEMENT'],
           },
